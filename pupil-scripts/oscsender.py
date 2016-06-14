@@ -15,7 +15,7 @@ ipc_subPort=requester.recv()
 monitor=Msg_Receiver(ctx,'tcp://localhost:%s'%ipc_subPort,topics=('gaze','notify.',))
 
 client=OSCClient()
-client.connect(("192.168.11.243",9000))
+client.connect(("192.168.1.40",9000))
 
 
 
@@ -35,9 +35,13 @@ def processGaze(g):
 			return
 		lastData=g['norm_pos']
 		t1=current_milli_time()
-		msg=OSCMessage("/pupil/pos")
+		msg=OSCMessage("/pupil/pos"+str(g['id']))
 		msg.append(g['norm_pos'])
-		client.send(msg)
+		msg.append(g['confidence'])
+		try:
+			client.send(msg)
+		except:
+			print "failed to send osc message"
 		samples=samples+1
 		if t1-t>1000:
 			print 'FPS:',samples
@@ -45,9 +49,20 @@ def processGaze(g):
 			samples=0
 
 def processCalib(g):
-	msg=OSCMessage("/pupil/calib")
+	msg=OSCMessage("/pupil/calib/data")
 	msg.append(g['pos'])
-	client.send(msg)
+	try:
+		client.send(msg)
+	except:
+		print "failed to send osc message"
+
+def sendOSCMessage(m):
+	msg=OSCMessage(m)
+	try:
+		client.send(msg)
+	except:
+		print "failed to send osc message"
+
 
 while True:
 	topic,g=monitor.recv()
@@ -55,9 +70,11 @@ while True:
 		processGaze(g)
 	if topic=='notify.calibration.start':
 		startedCalib=True
+		sendOSCMessage("/pupil/calib/start")
 		print 'calibration started'
 	if topic=='notify.calibration.done':
 		startedCalib=False
 		print 'calibration Done'
+		sendOSCMessage("/pupil/calib/stop")
 	if topic=='notify.calibration':
 		processCalib(g)

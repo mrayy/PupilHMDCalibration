@@ -35,6 +35,40 @@ public class ServerLog
 	public OSCServer server;
 	public List<OSCPacket> packets;
 	public List<string> log;
+	public delegate void OnPacket_Deleg(string address,OSCPacket packet);
+	public OnPacket_Deleg OnPacketReceived;
+
+	public OSCPacket ProcessPackets(OSCHandler h)
+	{
+		if (server.LastReceivedPacket != null) {
+			//log.Clear ();
+			//packets.Clear ();
+			//Initialization for the first packet received
+
+			if (packets.Count > 0) {
+				if (server.LastReceivedPacket.TimeStamp
+				    != packets [packets.Count - 1].TimeStamp) {	
+					if (log.Count > h.LogLength - 1) {
+						log.RemoveAt (0);
+						packets.RemoveAt (0);
+					}
+				} else
+					return server.LastReceivedPacket;
+			}
+
+			packets.Add (server.LastReceivedPacket);
+
+			log.Add (String.Concat (DateTime.UtcNow.ToString (), ".",
+				OSCHandler.FormatMilliseconds (DateTime.Now.Millisecond), " : ",
+				server.LastReceivedPacket.Address, " ",
+				OSCHandler.DataToString (server.LastReceivedPacket.Data)));
+			if (OnPacketReceived != null) {
+				OnPacketReceived (server.LastReceivedPacket.Address, server.LastReceivedPacket);
+			}
+			return server.LastReceivedPacket;
+		} else
+			return null;
+	}
 }
 
 /// <summary>
@@ -81,9 +115,18 @@ public class OSCHandler : MonoBehaviour
 	private static OSCHandler _instance = null;
 	private Dictionary<string, ClientLog> _clients = new Dictionary<string, ClientLog>();
 	private Dictionary<string, ServerLog> _servers = new Dictionary<string, ServerLog>();
-	
-	private const int _loglength = 25;
+
+	public PacketReceivedEventHandler OnPacket;
+	public Dictionary<string,PacketReceivedEventHandler> Receivers = new Dictionary<string, PacketReceivedEventHandler> ();
+
+	private int _loglength = 25;
 	#endregion
+
+	public int LogLength
+	{
+		set{ _loglength = value; }
+		get{ return _loglength; }
+	}
 	
 	/// <summary>
 	/// Initializes the OSC Handler.
@@ -146,6 +189,11 @@ public class OSCHandler : MonoBehaviour
 			
 		_instance = null;
 	}
+
+	void Update()
+	{
+		UpdateLogs ();
+	}
 	
 	/// <summary>
 	/// Creates an OSC Client (sends OSC messages) given an outgoing port and address.
@@ -167,7 +215,7 @@ public class OSCHandler : MonoBehaviour
 		clientitem.messages = new List<OSCMessage>();
 		
 		_clients.Add(clientId, clientitem);
-		
+		/*
 		// Send test message
 		string testaddress = "/test/alive/";
 		OSCMessage message = new OSCMessage(testaddress, destination.ToString());
@@ -178,9 +226,13 @@ public class OSCHandler : MonoBehaviour
 		                                         testaddress," ", DataToString(message.Data)));
 		_clients[clientId].messages.Add(message);
 		
-		_clients[clientId].client.Send(message);
+		_clients[clientId].client.Send(message);*/
 	}
-	
+	void OnPacketReceived(OSCServer sender, OSCPacket packet)
+	{
+		if (OnPacket != null)
+			OnPacket (sender, packet);
+	}
 	/// <summary>
 	/// Creates an OSC Server (listens to upcoming OSC messages) given an incoming port.
 	/// </summary>
@@ -203,10 +255,6 @@ public class OSCHandler : MonoBehaviour
 		_servers.Add(serverId, serveritem);
 	}
 
-    void OnPacketReceived(OSCServer server, OSCPacket packet)
-    {
-    }
-	
 	/// <summary>
 	/// Sends an OSC message to a specified client, given its clientId (defined at the OSC client construction),
 	/// OSC address and a single value. Also updates the client log.
@@ -285,39 +333,9 @@ public class OSCHandler : MonoBehaviour
 	{
 		foreach(KeyValuePair<string,ServerLog> pair in _servers)
 		{
-			if(_servers[pair.Key].server.LastReceivedPacket != null)
-			{
-				_servers [pair.Key].log.Clear ();
-				_servers [pair.Key].packets.Clear ();
-				//Initialization for the first packet received
-				if(_servers[pair.Key].log.Count == 0)
-				{	
-					_servers[pair.Key].packets.Add(_servers[pair.Key].server.LastReceivedPacket);
-						
-					_servers[pair.Key].log.Add(String.Concat(DateTime.UtcNow.ToString(), ".",
-					                                         FormatMilliseconds(DateTime.Now.Millisecond)," : ",
-					                                         _servers[pair.Key].server.LastReceivedPacket.Address," ",
-					                                         DataToString(_servers[pair.Key].server.LastReceivedPacket.Data)));
-					break;
-				}
-						
-				if(_servers[pair.Key].server.LastReceivedPacket.TimeStamp
-				   != _servers[pair.Key].packets[_servers[pair.Key].packets.Count - 1].TimeStamp)
-				{	
-					if(_servers[pair.Key].log.Count > _loglength - 1)
-					{
-						_servers[pair.Key].log.RemoveAt(0);
-						_servers[pair.Key].packets.RemoveAt(0);
-
-					}
-		
-					_servers[pair.Key].packets.Add(_servers[pair.Key].server.LastReceivedPacket);
-						
-					_servers[pair.Key].log.Add(String.Concat(DateTime.UtcNow.ToString(), ".",
-					                                         FormatMilliseconds(DateTime.Now.Millisecond)," : ",
-					                                         _servers[pair.Key].server.LastReceivedPacket.Address," ",
-					                                         DataToString(_servers[pair.Key].server.LastReceivedPacket.Data)));
-				}
+			OSCPacket p= pair.Value.ProcessPackets (this);
+			if (p != null && Receivers.ContainsKey(p.Address) && Receivers[p.Address]!=null) {
+				Receivers [p.Address] (pair.Value.server, p);
 			}
 		}
 	}
@@ -331,7 +349,7 @@ public class OSCHandler : MonoBehaviour
 	/// <returns>
 	/// A <see cref="System.String"/>
 	/// </returns>
-	private string DataToString(List<object> data)
+	public static string DataToString(List<object> data)
 	{
 		string buffer = "";
 		
@@ -354,7 +372,7 @@ public class OSCHandler : MonoBehaviour
 	/// <returns>
 	/// A <see cref="System.String"/>
 	/// </returns>
-	private string FormatMilliseconds(int milliseconds)
+	public static string FormatMilliseconds(int milliseconds)
 	{	
 		if(milliseconds < 100)
 		{
