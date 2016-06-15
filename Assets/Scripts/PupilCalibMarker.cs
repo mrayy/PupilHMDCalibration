@@ -12,7 +12,6 @@ public class PupilCalibMarker : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		OSCHandler.Instance.Init(); 
 		OSCHandler.Instance.OnPacket+=OnPacket;
 
 		_transform = GetComponent<RectTransform> ();
@@ -44,6 +43,10 @@ public class PupilCalibMarker : MonoBehaviour {
 	}
 	// Update is called once per frame
 	void Update () {
+		if (Input.GetKeyDown (KeyCode.C))
+			PupilGazeTracker.Instance.StartCalibration ();
+		if (Input.GetKeyDown (KeyCode.S))
+			PupilGazeTracker.Instance.StopCalibration ();
 		_image.enabled = _started;
 		if(_started)
 			_SetLocation (x, y);

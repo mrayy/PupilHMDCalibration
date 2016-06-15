@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityOSC;
+using System.Net;
 
 public class PupilGazeTracker {
 
@@ -84,13 +85,23 @@ public class PupilGazeTracker {
 
 		}
 	}
-
+	string _oscclientID="PupilGazeTracker";
 	// Script initialization
 	public PupilGazeTracker() {	
 		OSCHandler.Instance.Init(); 
 		OSCHandler.Instance.OnPacket+=OnPacket;
+		OSCHandler.Instance.CreateClient (_oscclientID, IPAddress.Parse("192.168.1.42"), 9090);
+
 	}
 
+	public void StartCalibration()
+	{
+		OSCHandler.Instance.SendMessageToClient (_oscclientID, "/pupil/calib", "start");
+	}
+	public void StopCalibration()
+	{
+		OSCHandler.Instance.SendMessageToClient (_oscclientID, "/pupil/calib", "stop");
+	}
 	void OnPacket(OSCServer server,OSCPacket packet)
 	{
 
