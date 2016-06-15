@@ -1,18 +1,36 @@
 ## PupilHMDCalibration
 
+This project provides the calibration process of Pupil HMD hardware and eye gaze data streaming to Unity. 
+
+By the date of creating this project (15-June-2016), it is designed to work with Pupil Capture branch zmq_ipc:
+
+https://github.com/pupil-labs/pupil/tree/zmq_ipc
+
+After installing this branch and making sure Pupil-capture is running, please follow the setup steps to get it running.
+
 #Setup:
-To use this project, copy pupil-scripts folder to pupil pc (linux/mac), and install pyOSC using pip:
+1- install pyOSC using pip:
+
 pip install pyOSC
 
-You need to set your Unity PC IP address in oscsender.py file, todo so, modify the following line:
+2- Copy pupil-scripts folder to pupil pc (linux/mac)
+
+3- Modify OSCSender.py script to point to your Unity PC IP address:
+
 >> client.connect(("192.168.11.243",9000))
+
 Change "192.168.11.243" to your unity PC IP address.
 
-While pupil capture is running, run oscsender.py to pass the required gaze and calibration data from pupil pc to unity pc.
+4- Run Pupil Capture
 
+5- Run OSCSender.py
+
+python OSCSender.py
 
 #Calibration:
 
 Run Unity project, and load Calibration scene. Hit play to start receiving gaze data.
 
-To calibrate, run hmd_calibration_client.py in pupil pc, and follow calibration process in unity.
+To Calibrate eye gaze, hit "C" on keyboard in Unity, a white target will appear in the HMD. 
+
+To stop calibration, hit "S"
