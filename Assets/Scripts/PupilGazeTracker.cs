@@ -4,15 +4,15 @@ using System.Collections.Generic;
 using UnityOSC;
 using System.Net;
 
-public class PupilGazeTracker {
+public class PupilGazeTracker:MonoBehaviour
+{
 
 	static PupilGazeTracker _Instance;
 	public static PupilGazeTracker Instance
 	{
 		get{
 			if (_Instance == null) {
-				_Instance = new PupilGazeTracker ();
-				OSCHandler.Instance.CreateServer ("LocalServer", 9000);
+				_Instance = new GameObject("PupilGazeTracker").AddComponent<PupilGazeTracker> ();
 			}
 			return _Instance;
 		}
@@ -36,6 +36,8 @@ public class PupilGazeTracker {
 	Vector2 _eyePos;
 	float confidence;
 
+	public string ServerIP="";
+
 	public enum GazeSource
 	{
 		LeftEye,
@@ -48,6 +50,31 @@ public class PupilGazeTracker {
 		get{ return _eyePos; }
 	}
 
+
+	void Start()
+	{
+		if (PupilGazeTracker._Instance == null)
+			PupilGazeTracker._Instance = this;
+		OSCHandler.Instance.Init(); 
+		OSCHandler.Instance.OnPacket+=OnPacket;
+		OSCHandler.Instance.DestroyEvent+=OSCDestroyed;
+		OSCHandler.Instance.CreateClient (_oscclientID, IPAddress.Parse(ServerIP), 9090);
+		OSCHandler.Instance.CreateServer ("LocalServer", 9000);
+
+		StartProcess ();
+
+	}
+
+	void OSCDestroyed()
+	{
+		StopProcess ();
+	}
+	void OnDestroy()
+	{
+		if (OSCHandler.Exists ()) {
+			StopProcess ();
+		}
+	}
 
 	public Vector2 LeftEyePos
 	{
@@ -88,10 +115,15 @@ public class PupilGazeTracker {
 	string _oscclientID="PupilGazeTracker";
 	// Script initialization
 	public PupilGazeTracker() {	
-		OSCHandler.Instance.Init(); 
-		OSCHandler.Instance.OnPacket+=OnPacket;
-		OSCHandler.Instance.CreateClient (_oscclientID, IPAddress.Parse("192.168.1.66"), 9090);
 
+	}
+	public void StartProcess()
+	{
+		OSCHandler.Instance.SendMessageToClient (_oscclientID, "/pupil/process", "start");
+	}
+	public void StopProcess()
+	{
+		OSCHandler.Instance.SendMessageToClient (_oscclientID, "/pupil/process", "stop");
 	}
 
 	public void StartCalibration()

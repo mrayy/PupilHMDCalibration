@@ -49,12 +49,23 @@ def calib_callback(path,tags,args,source):
 		sendOSCMessage("/pupil/calib/stop")
 		print 'calibration stopped'
 
+def process_callback(path,tags,args,source):
+	global shouldStartCalib
+	if(args[0]=="start"):
+		startEyes()
+		print 'Eyes started'
+
+	if(args[0]=="stop"):
+		closeEyes()
+		print 'Eyes stopped'
+
 
 def osctimeout(self):
 	self.timed_out=True
 
 server.addDefaultHandlers()
 server.addMsgHandler("/pupil/calib",calib_callback)
+#server.addMsgHandler("/pupil/process",process_callback)
 
 #start receiver
 st=threading.Thread(target=server.serve_forever)
@@ -71,6 +82,7 @@ def calibThread():
 ct=threading.Thread(target=calibThread)
 ct.start()	
 
+
 def processGaze(g):
 	global lastData,t,samples
 	conf=g['confidence']
@@ -84,8 +96,8 @@ def processGaze(g):
 		msg.append(g['confidence'])
 		try:
 			client.send(msg)
-		except:
-			print "failed to send osc message"
+		except Exception, e:
+			print "failed to send osc message: "+str(e)
 		samples=samples+1
 		if t1-t>1000:
 			print 'FPS:',samples
@@ -97,15 +109,15 @@ def processCalib(g):
 	msg.append(g['pos'])
 	try:
 		client.send(msg)
-	except:
-		print "failed to send osc message"
+	except Exception, e:
+		print "failed to send osc message: "+str(e)
 
 def sendOSCMessage(m):
 	msg=OSCMessage(m)
 	try:
 		client.send(msg)
-	except:
-		print "failed to send osc message"
+	except Exception, e:
+		print "failed to send osc message: "+str(e)
 
 
 def startHandling():
@@ -125,6 +137,7 @@ def startHandling():
 
 try:
 	print "started"
+	startEyes()
 	startHandling()
 except Exception, e:
 	print "error occured: "+str(e)
@@ -133,4 +146,5 @@ finally:
 	server.close()
 	st.join()
 	ct.join()
-print "Done"
+	closeEyes()
+	print "Done"

@@ -109,6 +109,10 @@ public class OSCHandler : MonoBehaviour
 	        return _instance;
 	    }
 	}
+	public static bool Exists()
+	{
+		return _instance != null;
+	}
 	#endregion
 	
 	#region Member Variables
@@ -116,6 +120,8 @@ public class OSCHandler : MonoBehaviour
 	private Dictionary<string, ClientLog> _clients = new Dictionary<string, ClientLog>();
 	private Dictionary<string, ServerLog> _servers = new Dictionary<string, ServerLog>();
 
+	public delegate void DestroyEventHandler();
+	public DestroyEventHandler DestroyEvent;
 	public PacketReceivedEventHandler OnPacket;
 	public Dictionary<string,PacketReceivedEventHandler> Receivers = new Dictionary<string, PacketReceivedEventHandler> ();
 
@@ -127,7 +133,28 @@ public class OSCHandler : MonoBehaviour
 		set{ _loglength = value; }
 		get{ return _loglength; }
 	}
-	
+
+	void Start()
+	{
+		if (_instance == null)
+			_instance = this;
+	}
+	void OnDestroy()
+	{
+		if (DestroyEvent != null)
+			DestroyEvent ();
+		foreach(KeyValuePair<string,ClientLog> pair in _clients)
+		{
+			pair.Value.client.Close();
+		}
+
+		foreach(KeyValuePair<string,ServerLog> pair in _servers)
+		{
+			pair.Value.server.Close();
+		}
+
+		_instance = null;
+	}
 	/// <summary>
 	/// Initializes the OSC Handler.
 	/// Here you can create the OSC servers and clientes.
@@ -177,17 +204,6 @@ public class OSCHandler : MonoBehaviour
 	/// </summary>
 	void OnApplicationQuit() 
 	{
-		foreach(KeyValuePair<string,ClientLog> pair in _clients)
-		{
-			pair.Value.client.Close();
-		}
-		
-		foreach(KeyValuePair<string,ServerLog> pair in _servers)
-		{
-			pair.Value.server.Close();
-		}
-			
-		_instance = null;
 	}
 
 	void Update()

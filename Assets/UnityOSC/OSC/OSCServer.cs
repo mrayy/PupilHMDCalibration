@@ -26,7 +26,7 @@ using System.Collections.Generic;
 
 namespace UnityOSC
 {
-    public delegate void PacketReceivedEventHandler(OSCServer sender, OSCPacket packet);
+	public delegate void PacketReceivedEventHandler(OSCServer sender, OSCPacket packet);
 
 	/// <summary>
 	/// Receives incoming OSC messages

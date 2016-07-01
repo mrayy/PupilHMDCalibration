@@ -32,10 +32,14 @@ def get_pupil_timestamp():
     req.send('t') #see Pupil Remote Plugin for details
     return float(req.recv())
 
-def start_calibration():
-	global should_stop
-	should_stop=False
 
+eyes_started=False
+
+def startEyes():
+	global eyes_started
+	if eyes_started==True:
+		return
+	eyes_started=True
 	# set calibration method to hmd calibration
 	n = {'subject':'eye_process.should_start.0','eye_id':0, 'args':{}}
 	print send_recv_notification(n)
@@ -43,6 +47,24 @@ def start_calibration():
 	n = {'subject':'eye_process.should_start.1','eye_id':1, 'args':{}}
 	print send_recv_notification(n)
 	time.sleep(2)
+
+def closeEyes():
+	global eyes_started
+	if eyes_started==False:
+		return
+	eyes_started=False
+	print "closing eyes"
+	# set calibration method to hmd calibration
+	n = {'subject':'eye_process.should_stop','eye_id':0, 'args':{}}
+	print send_recv_notification(n)
+	# set calibration method to hmd calibration
+	n = {'subject':'eye_process.should_stop','eye_id':1, 'args':{}}
+	print send_recv_notification(n)
+
+
+def start_calibration():
+	global should_stop
+	should_stop=False
 
 	# set calibration method to hmd calibration
 	n = {'subject':'start_plugin','name':'HMD_Calibration', 'args':{}}
@@ -103,7 +125,7 @@ def calibration_procedure():
 
 	time.sleep(2)
 	# set calibration method to hmd calibration
-	n = {'subject':'service_process.should_stop'}
-	print send_recv_notification(n)
+	#n = {'subject':'service_process.should_stop'}
+	#print send_recv_notification(n)
 
 
