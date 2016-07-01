@@ -3,7 +3,7 @@ HMD calibration client example.
 This script shows how to talk to Pupil Capture or Pupil Service
 and run a gaze mapper calibration.
 '''
-import zmq, json, time
+import zmq, msgpack, time
 from zmq_tools import *
 
 
@@ -25,7 +25,7 @@ def init_calibration(c,r):
 #convenience functions
 def send_recv_notification(n):
     # REQ REP requirese lock step communication with multipart msg (topic,json_encoded dict)
-    req.send_multipart(('notify.%s'%n['subject'], json.dumps(n)))
+    req.send_multipart(('notify.%s'%n['subject'], msgpack.dumps(n)))
     return req.recv()
 
 def get_pupil_timestamp():
@@ -35,6 +35,14 @@ def get_pupil_timestamp():
 def start_calibration():
 	global should_stop
 	should_stop=False
+
+	# set calibration method to hmd calibration
+	n = {'subject':'eye_process.should_start.0','eye_id':0, 'args':{}}
+	print send_recv_notification(n)
+	# set calibration method to hmd calibration
+	n = {'subject':'eye_process.should_start.1','eye_id':1, 'args':{}}
+	print send_recv_notification(n)
+	time.sleep(2)
 
 	# set calibration method to hmd calibration
 	n = {'subject':'start_plugin','name':'HMD_Calibration', 'args':{}}
@@ -52,15 +60,20 @@ def calibration_procedure():
 	global should_stop
 	notification={'subject':'nextReference'}
 	topic=notification['subject']
-	payload=json.dumps(notification)
+	payload=msgpack.dumps(notification)
 
 	ref_data = []
 
-	for pos in ((0.5,0.5),(0,0),(0,0.5),(0,1),(0.5,1),(1,1),(1,0.5),(1,0),(.5,0)):
+	calib_points=((0.5,0.5),(0,0),(0,0.5),(0,1),(0.5,1),(1,1),(1,0.5),(1,0),(.5,0))
+
+	#calib_points=((0.5,0.5),(0,0),(0,1),(1,1),(1,0))
+
+	for pos in calib_points:
 	    if should_stop==True:
 		break
 	    print 'subject now looks at position:',pos
 	    publisher.notify({'subject':'calibration','pos':pos})
+	    time.sleep(1/25.)#wait until user fixtate his eye to the target
 	    for s in range(120):
 		if should_stop==True:
 			break
@@ -87,4 +100,10 @@ def calibration_procedure():
 	# compute the gaze mapping params, and start a new gaze mapper.
 	n = {'subject':'calibration.should_stop'}
 	print send_recv_notification(n)
+
+	time.sleep(2)
+	# set calibration method to hmd calibration
+	n = {'subject':'service_process.should_stop'}
+	print send_recv_notification(n)
+
 

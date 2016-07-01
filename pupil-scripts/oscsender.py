@@ -26,10 +26,10 @@ monitor=Msg_Receiver(ctx,'tcp://localhost:%s'%ipc_subPort,topics=('gaze','notify
 
 #create a client to send data to unity
 client=OSCClient()
-client.connect(("192.168.1.40",9000))
+client.connect(("192.168.1.51",9000))
 
 #create receiver from Unity
-server=OSCServer(("192.168.1.42",9090))
+server=OSCServer(("192.168.1.66",9090))
 server.timeout=0
 
 #init_calibration(ctx,req)

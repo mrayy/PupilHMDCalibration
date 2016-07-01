@@ -90,7 +90,7 @@ public class PupilGazeTracker {
 	public PupilGazeTracker() {	
 		OSCHandler.Instance.Init(); 
 		OSCHandler.Instance.OnPacket+=OnPacket;
-		OSCHandler.Instance.CreateClient (_oscclientID, IPAddress.Parse("192.168.1.42"), 9090);
+		OSCHandler.Instance.CreateClient (_oscclientID, IPAddress.Parse("192.168.1.66"), 9090);
 
 	}
 
