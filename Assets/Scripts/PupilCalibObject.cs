@@ -3,19 +3,18 @@ using System.Collections;
 using UnityEngine.UI;
 using UnityOSC;
 
-public class PupilCalibMarker : MonoBehaviour {
+public class PupilCalibObject : MonoBehaviour {
 
-	RectTransform _transform;
-	Image _image;
+	MeshRenderer _mr;
 	bool _started=false;
 	float x,y;
+
 
 	// Use this for initialization
 	void Start () {
 
-		_transform = GetComponent<RectTransform> ();
-		_image = GetComponent<Image> ();
-		_image.enabled = false;
+		_mr = GetComponent<MeshRenderer> ();
+		_mr.enabled = false;
 
 		PupilGazeTracker.Instance.OnCalibrationStarted += OnCalibrationStarted;
 		PupilGazeTracker.Instance.OnCalibrationDone += OnCalibrationDone;
@@ -40,11 +39,8 @@ public class PupilCalibMarker : MonoBehaviour {
 
 	void _SetLocation(float x,float y)
 	{
-		Canvas c = _transform.GetComponentInParent<Canvas> ();
-		if (c == null)
-			return;
-		Vector3 pos=new Vector3 ((x-0.5f)*c.pixelRect.width,(y-0.5f)*c.pixelRect.height,0);
-		_transform.localPosition = pos;
+		Vector3 pos=new Vector3 ((x-0.5f)*PupilGazeTracker.Instance.Width,(y-0.5f)*PupilGazeTracker.Instance.Height,0);
+		transform.localPosition = pos;
 	}
 	// Update is called once per frame
 	void Update () {/*
@@ -52,7 +48,7 @@ public class PupilCalibMarker : MonoBehaviour {
 			PupilGazeTracker.Instance.StartCalibration ();
 		if (Input.GetKeyDown (KeyCode.S))
 			PupilGazeTracker.Instance.StopCalibration ();*/
-		_image.enabled = _started;
+		_mr.enabled = _started;
 		if(_started)
 			_SetLocation (x, y);
 	}
