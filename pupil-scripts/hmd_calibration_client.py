@@ -40,6 +40,8 @@ def startEyes():
 	if eyes_started==True:
 		return
 	eyes_started=True
+	print "starting eyes"
+	
 	# set calibration method to hmd calibration
 	n = {'subject':'eye_process.should_start.0','eye_id':0, 'args':{}}
 	print send_recv_notification(n)
@@ -87,7 +89,7 @@ def calibration_procedure():
 	ref_data = []
 
 	calib_points=((0.5,0.5),(0,0),(0,0.5),(0,1),(0.5,1),(1,1),(1,0.5),(1,0),(.5,0))
-
+	#calib_points=((0,0),(0,1),(0.5,1),(1,1),(1,0),(.5,0))
 	#calib_points=((0.5,0.5),(0,0),(0,1),(1,1),(1,0))
 
 	for pos in calib_points:
@@ -96,7 +98,7 @@ def calibration_procedure():
 	    print 'subject now looks at position:',pos
 	    publisher.notify({'subject':'calibration','pos':pos})
 	    time.sleep(1/25.)#wait until user fixtate his eye to the target
-	    for s in range(120):
+	    for s in range(60):
 		if should_stop==True:
 			break
 		# get the current pupil time (pupil uses CLOCK_MONOTONIC with adjustable timebase).
@@ -108,7 +110,7 @@ def calibration_procedure():
 		datum1 = {'norm_pos':pos,'timestamp':t,'id':1}
 		ref_data.append(datum0)
 		ref_data.append(datum1)
-		time.sleep(1/60.) #simulate animation speed.
+		time.sleep(1/45.) #simulate animation speed.
 
 	# Send ref data to Pupil Capture/Service:
 	# This notification can be sent once at the end or multiple times.

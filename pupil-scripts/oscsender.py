@@ -26,10 +26,10 @@ monitor=Msg_Receiver(ctx,'tcp://localhost:%s'%ipc_subPort,topics=('gaze','notify
 
 #create a client to send data to unity
 client=OSCClient()
-client.connect(("192.168.1.51",9000))
+client.connect(("192.168.1.50",9000))
 
-#create receiver from Unity
-server=OSCServer(("192.168.1.66",9090))
+#create receiver from Unity, assign local address
+server=OSCServer(("192.168.1.62",9090))
 server.timeout=0
 
 #init_calibration(ctx,req)
@@ -65,7 +65,7 @@ def osctimeout(self):
 
 server.addDefaultHandlers()
 server.addMsgHandler("/pupil/calib",calib_callback)
-#server.addMsgHandler("/pupil/process",process_callback)
+server.addMsgHandler("/pupil/process",process_callback)
 
 #start receiver
 st=threading.Thread(target=server.serve_forever)
@@ -137,11 +137,13 @@ def startHandling():
 
 try:
 	print "started"
-	startEyes()
 	startHandling()
 except Exception, e:
 	print "error occured: "+str(e)
 finally:
+	if shouldStartCalib==True:
+		shouldStartCalib=False
+		cancel_calibration()
 	isDone=True
 	server.close()
 	st.join()
