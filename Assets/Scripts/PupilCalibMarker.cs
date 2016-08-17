@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
-using UnityOSC;
 
 public class PupilCalibMarker : MonoBehaviour {
 
@@ -47,11 +46,11 @@ public class PupilCalibMarker : MonoBehaviour {
 		_transform.localPosition = pos;
 	}
 	// Update is called once per frame
-	void Update () {/*
+	void Update () {
 		if (Input.GetKeyDown (KeyCode.C))
 			PupilGazeTracker.Instance.StartCalibration ();
 		if (Input.GetKeyDown (KeyCode.S))
-			PupilGazeTracker.Instance.StopCalibration ();*/
+			PupilGazeTracker.Instance.StopCalibration ();/**/
 		_image.enabled = _started;
 		if(_started)
 			_SetLocation (x, y);

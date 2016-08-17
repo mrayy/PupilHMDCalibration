@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
-using UnityOSC;
 
 public class PupilCalibObject : MonoBehaviour {
 
@@ -39,7 +38,7 @@ public class PupilCalibObject : MonoBehaviour {
 
 	void _SetLocation(float x,float y)
 	{
-		Vector3 pos=new Vector3 ((x-0.5f)*PupilGazeTracker.Instance.Width,(y-0.5f)*PupilGazeTracker.Instance.Height,0);
+		Vector3 pos=new Vector3 ((x-0.5f)*PupilGazeTracker.Instance.CanvasWidth,(y-0.5f)*PupilGazeTracker.Instance.CanvasHeight,0);
 		transform.localPosition = pos;
 	}
 	// Update is called once per frame
