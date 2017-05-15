@@ -2,7 +2,7 @@
 
 This project provides the calibration process of Pupil HMD hardware and eye gaze data streaming to Unity. 
 
-This works with Pupil Service/ Pupil capture version 0.8+ 
+This works with Pupil Service/ Pupil capture version 0.9+ 
 https://github.com/pupil-labs/pupil/releases
 
 #Setup:
