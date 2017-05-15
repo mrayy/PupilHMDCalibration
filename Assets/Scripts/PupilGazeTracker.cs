@@ -183,7 +183,7 @@ public class PupilGazeTracker:MonoBehaviour
 
 	public delegate void OnCalibrationStartedDeleg(PupilGazeTracker manager);
 	public delegate void OnCalibrationDoneDeleg(PupilGazeTracker manager);
-	public delegate void OnEyeGazeDeleg(PupilGazeTracker manager);
+	public delegate void OnEyeGazeDeleg(PupilGazeTracker manager,int id);
 	//public delegate void OnCalibDataDeleg(PupilGazeTracker manager,float x,float y);
 	public delegate void OnCalibDataDeleg(PupilGazeTracker manager,object position);
 	public delegate void DrawMenuDeleg ();
@@ -694,12 +694,12 @@ public class PupilGazeTracker:MonoBehaviour
 				_eyeFps[0].AddFrame();
 				leftEye.AddGaze (x, y);
 				if (OnEyeGaze != null)
-					OnEyeGaze (this);
+					OnEyeGaze (this,id);
 			} else if (id == 1) {
 				_eyeFps[1].AddFrame();
 				rightEye.AddGaze (x, y);
 				if (OnEyeGaze != null)
-					OnEyeGaze (this);
+					OnEyeGaze (this,id);
 			}
 
 
