@@ -5,10 +5,7 @@ This project provides the calibration process of Pupil HMD hardware and eye gaze
 This works with Pupil Service/ Pupil capture version 0.9+ 
 https://github.com/pupil-labs/pupil/releases
 
-#Setup:
-1- Run Pupil Capture or Pupil Service in ubuntu/mac 
-
-2- Configure PupilGaze property's Server IP to point to Pupil PC
+Run Pupil Capture first and enable Pupil Remote plugin
 
 #Calibration:
 
